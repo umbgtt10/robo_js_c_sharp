@@ -482,4 +482,4 @@ See [PLAN.md](PLAN.md) for:
 
 ---
 
-**Built with ❤️ for hightech manufacturing environments**
+**Built with for hightech manufacturing environments**

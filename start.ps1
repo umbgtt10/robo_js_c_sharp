@@ -46,28 +46,28 @@ function Wait-ForPort {
         [int]$TimeoutSeconds = 30,
         [string]$ServiceName = "Service"
     )
-    
+
     $elapsed = 0
     $checkInterval = 500 # milliseconds
-    
+
     Write-Info "   Waiting for $ServiceName to be ready on port $Port..."
-    
+
     while ($elapsed -lt ($TimeoutSeconds * 1000)) {
         $connection = Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue
         if ($connection) {
             Write-Success "   [OK] $ServiceName is listening on port $Port"
             return $true
         }
-        
+
         Start-Sleep -Milliseconds $checkInterval
         $elapsed += $checkInterval
-        
+
         # Show progress every 2 seconds
         if ($elapsed % 2000 -eq 0) {
             Write-Host "   Still waiting... ($([int]($elapsed/1000))s)" -ForegroundColor Gray
         }
     }
-    
+
     Write-Error "   [TIMEOUT] $ServiceName did not start within $TimeoutSeconds seconds"
     return $false
 }

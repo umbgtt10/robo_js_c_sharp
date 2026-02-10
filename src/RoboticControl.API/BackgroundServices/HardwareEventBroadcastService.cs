@@ -7,18 +7,19 @@ using RoboticControl.Application.DTOs;
 namespace RoboticControl.API.BackgroundServices;
 
 /// <summary>
-/// Background service that polls robot position and broadcasts updates via SignalR
+/// Background service that subscribes to hardware events and broadcasts real-time updates via SignalR.
+/// Uses event-driven architecture rather than polling - responds to PositionChanged and StatusChanged events
+/// from the hardware service and relays them to all connected SignalR clients.
 /// </summary>
-public class PositionPollingService : BackgroundService
+public class HardwareEventBroadcastService : BackgroundService
 {
-    private readonly ILogger<PositionPollingService> _logger;
+    private readonly ILogger<HardwareEventBroadcastService> _logger;
     private readonly IHubContext<Hubs.RobotHub> _hubContext;
     private readonly IRobotHardwareService _hardwareService;
     private readonly IMapper _mapper;
-    private readonly TimeSpan _pollingInterval = TimeSpan.FromMilliseconds(100);
 
-    public PositionPollingService(
-        ILogger<PositionPollingService> logger,
+    public HardwareEventBroadcastService(
+        ILogger<HardwareEventBroadcastService> logger,
         IHubContext<Hubs.RobotHub> hubContext,
         IRobotHardwareService hardwareService,
         IMapper mapper)
@@ -31,7 +32,7 @@ public class PositionPollingService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("Position polling service starting");
+        _logger.LogInformation("Hardware event broadcast service starting");
 
         // Wait for initial connection
         while (!_hardwareService.IsConnected && !stoppingToken.IsCancellationRequested)
@@ -39,11 +40,11 @@ public class PositionPollingService : BackgroundService
             await Task.Delay(1000, stoppingToken);
         }
 
-        // Subscribe to hardware events
+        // Subscribe to hardware events (event-driven, not polling)
         _hardwareService.PositionChanged += OnPositionChanged;
         _hardwareService.StatusChanged += OnStatusChanged;
 
-        _logger.LogInformation("Position polling service started");
+        _logger.LogInformation("Hardware event broadcast service started");
 
         // Keep service alive
         try
@@ -55,7 +56,7 @@ public class PositionPollingService : BackgroundService
             // Normal shutdown
         }
 
-        _logger.LogInformation("Position polling service stopped");
+        _logger.LogInformation("Hardware event broadcast service stopped");
     }
 
     private async void OnPositionChanged(object? sender, RobotPosition position)

@@ -32,7 +32,7 @@ public class HardwareConnectionService : BackgroundService
         while (attempt < maxAttempts && !stoppingToken.IsCancellationRequested)
         {
             attempt++;
-            _logger.LogInformation("Attempting to connect to robot hardware (attempt {Attempt}/{MaxAttempts})", 
+            _logger.LogInformation("Attempting to connect to robot hardware (attempt {Attempt}/{MaxAttempts})",
                 attempt, maxAttempts);
 
             try
@@ -56,7 +56,7 @@ public class HardwareConnectionService : BackgroundService
 
         if (!_hardwareService.IsConnected)
         {
-            _logger.LogError("Failed to establish initial connection to robot hardware after {Attempts} attempts", 
+            _logger.LogError("Failed to establish initial connection to robot hardware after {Attempts} attempts",
                 maxAttempts);
         }
 
