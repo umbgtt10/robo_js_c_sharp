@@ -1,0 +1,31 @@
+.page {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.page-title {
+  font-size: var(--font-3xl);
+  font-weight: 700;
+  color: var(--color-gray-900);
+  margin-bottom: var(--spacing-xl);
+}
+
+.placeholder-text {
+  font-size: var(--font-lg);
+  color: var(--color-gray-600);
+  margin-bottom: var(--spacing-md);
+  text-align: center;
+}
+
+.placeholder-description {
+  font-weight: 600;
+  margin-top: var(--spacing-lg);
+  margin-bottom: var(--spacing-sm);
+  color: var(--color-gray-700);
+}
+
+.feature-list {
+  list-style-position: inside;
+  color: var(--color-gray-600);
+  line-height: 1.8;
+}
