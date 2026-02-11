@@ -57,14 +57,18 @@ start.bat
 ```powershell
 .\start.ps1 -Clean        # Clean build artifacts before starting
 .\start.ps1 -SkipInstall  # Skip npm install
+.\start.ps1 -SkipTests    # Skip running tests (faster startup)
 ```
 
-Once all services are running, open: **http://localhost:5173**
+The script now automatically:
+1. Stops any running services
+2. **Runs all tests** (use `-SkipTests` to skip)
+3. Installs frontend dependencies (if needed)
+4. Starts Robot Simulator (port 5000)
+5. Starts Backend API (port 5001)
+6. Starts Frontend dev server (port 5173)
 
-The script automatically starts:
-1. Robot Simulator (port 5000)
-2. Backend API (port 5001)
-3. Frontend dev server (port 5173)
+Once all services are running, open: **http://localhost:5173**
 
 ### Manual Start
 
@@ -102,6 +106,38 @@ This removes:
 - All `bin` and `obj` folders
 - `node_modules` and `dist` folders
 - `logs` folder
+
+## 🧪 Running Tests
+
+**Important:** Stop the API before running backend tests to avoid DLL lock errors:
+```powershell
+.\clean.ps1  # Stops all running services
+```
+
+Run all tests (frontend + backend):
+
+```powershell
+.\test.ps1
+```
+
+**Options:**
+```powershell
+.\test.ps1 -Frontend       # Frontend tests only
+.\test.ps1 -Backend        # Backend tests only
+.\test.ps1 -Coverage       # Generate coverage report
+.\test.ps1 -Watch          # Watch mode (frontend only)
+```
+
+**Frontend tests individually:**
+```bash
+cd client
+npm test                   # Run once
+npm run test:watch         # Watch mode
+npm run test:ui            # Visual UI
+npm run test:coverage      # Coverage report
+```
+
+See [client/README.TEST.md](client/README.TEST.md) for detailed testing documentation.
 
 ## 🎮 Using the Application
 

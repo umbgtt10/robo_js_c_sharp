@@ -43,14 +43,14 @@ export function StatusPanel() {
         <div className="status-item">
           <span className="status-label">Temperature</span>
           <span className="status-value">
-            {status.temperature.toFixed(1)}°C
+            {status.temperature?.toFixed(1) ?? 'N/A'}°C
           </span>
         </div>
 
         <div className="status-item">
           <span className="status-label">Load</span>
           <span className="status-value">
-            {status.loadPercentage.toFixed(0)}%
+            {status.loadPercentage?.toFixed(0) ?? 'N/A'}%
           </span>
         </div>
 

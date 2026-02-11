@@ -13,7 +13,7 @@ export function PositionDisplay() {
     );
   }
 
-  const formatValue = (value: number) => value.toFixed(2);
+  const formatValue = (value: number | undefined) => value?.toFixed(2) ?? 'N/A';
 
   return (
     <div className="card">

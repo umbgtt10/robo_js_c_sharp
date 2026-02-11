@@ -15,22 +15,26 @@
 .PARAMETER SkipInstall
     Skip npm install step (use if dependencies are already installed)
 
+.PARAMETER SkipTests
+    Skip running tests before starting services
+
 .EXAMPLE
     .\start.ps1
-    Start all components
+    Start all components with tests
 
 .EXAMPLE
     .\start.ps1 -Clean
-    Clean and start all components
+    Clean, test, and start all components
 
 .EXAMPLE
-    .\start.ps1 -SkipInstall
-    Start without running npm install
+    .\start.ps1 -SkipTests
+    Start without running tests (faster startup)
 #>
 
 param(
     [switch]$Clean,
-    [switch]$SkipInstall
+    [switch]$SkipInstall,
+    [switch]$SkipTests
 )
 
 # Color output functions
@@ -124,6 +128,24 @@ try {
     } else {
         Write-Info "`n[INIT] Stopping any running processes..."
         & $cleanScript -ProcessesOnly
+    }
+
+    # Run tests after cleanup
+    if (!$SkipTests) {
+        Write-Info "`n[TEST] Running tests..."
+        $testScript = Join-Path $script:rootDir "test.ps1"
+        if (Test-Path $testScript) {
+            & $testScript
+            if ($LASTEXITCODE -ne 0) {
+                Write-Error "[ERROR] Tests failed! Fix issues before starting services."
+                exit 1
+            }
+            Write-Success "[OK] All tests passed"
+        } else {
+            Write-Warning "[SKIP] test.ps1 not found, skipping tests"
+        }
+    } else {
+        Write-Info "`n[SKIP] Tests skipped (as requested)"
     }
 
     # Install frontend dependencies if needed
