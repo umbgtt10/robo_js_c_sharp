@@ -78,7 +78,7 @@ This is a three-tier web-based robotic control system built with React (frontend
 **React Core Hooks**
 
 useState: Used for managing component local state
-useEffect: Used for side effects (API calls, subscriptions, cleanup)
+useEffect: Used to synchornize a compoenent with anexternal system (API calls, subscriptions, cleanup)
 useCallback: used for memorizing functions to prevent unnecessary re-renders
 useContext + createContext: used for global state management (avoiding prop drilling)
 
@@ -818,6 +818,20 @@ web_js_c_sharp/
 ├── RoboticControl.sln             # Solution file
 └── README.md                       # Project documentation
 ```
+
+## Testing strategy
+
+1) Backend unit tests: Test business logic in Application layer with mocked hardware service. Full coverage. MsTest framework with FluentAssertions and Moq.
+Run on every commit and pull request.
+2) Backend integration tests: Test API endpoints with with hardware simulator. Validate end-to-end command execution and event broadcasting. MsTest framework with FluentAssertions and Moq. Run on every commit and pull request.
+3) Frontend unit tests: Test React components, services and hooks with tools like MSW (Mock Service Library). Run on every commit and pull request.
+4) Full End-to-end tests: Use Playwright or Cypress to automate browser interactions. Use Docker to run backend and simulator in test environment.
+Use Cucumber or similar BDD framework to write user story-based tests.
+Validate full user flows (e.g., jog command, emergency stop) with the backend and simulator running. Test real-time updates and error handling in the UI.
+Run occasionally and during the night. Trace with requirements and user stories.
+
+
+
 
 ---
 
