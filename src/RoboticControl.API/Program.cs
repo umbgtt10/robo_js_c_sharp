@@ -58,8 +58,22 @@ builder.Services.AddCors(options =>
 });
 
 // Configure JWT Authentication
-var secretKey = builder.Configuration["JwtSettings:SecretKey"]
-    ?? "YourSuperSecretKeyThatShouldBe32CharsOrMore!";
+// In production, JWT secret MUST be provided via environment variable JWT_SECRET_KEY
+var secretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY")
+    ?? builder.Configuration["JwtSettings:SecretKey"]
+    ?? throw new InvalidOperationException(
+        "JWT Secret Key not configured. " +
+        "Set JWT_SECRET_KEY environment variable or JwtSettings:SecretKey in appsettings.json");
+
+// Validate key length for security
+if (secretKey.Length < 32)
+{
+    throw new InvalidOperationException(
+        $"JWT Secret Key must be at least 32 characters. Current length: {secretKey.Length}");
+}
+
+var jwtIssuer = builder.Configuration["JwtSettings:Issuer"] ?? "RoboticControlAPI";
+var jwtAudience = builder.Configuration["JwtSettings:Audience"] ?? "RoboticControlClient";
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -70,8 +84,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = "RoboticControlAPI",
-            ValidAudience = "RoboticControlClient",
+            ValidIssuer = jwtIssuer,
+            ValidAudience = jwtAudience,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
             ClockSkew = TimeSpan.Zero
         };

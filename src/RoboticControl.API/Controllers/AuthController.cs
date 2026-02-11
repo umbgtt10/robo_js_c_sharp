@@ -66,16 +66,23 @@ public class AuthController : ControllerBase
             token,
             username = user.Username,
             role = user.Role,
-            expiresAt = DateTime.UtcNow.AddHours(8)
+            expiresAt = DateTime.UtcNow.AddHours(
+                int.Parse(_configuration["JwtSettings:ExpirationHours"] ?? "8"))
         });
     }
 
     private string GenerateToken(string username, string role)
     {
-        var key = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(_configuration["JwtSettings:SecretKey"]
-                ?? "YourSuperSecretKeyThatShouldBe32CharsOrMore!"));
+        // Read JWT configuration with environment variable priority
+        var secretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY")
+            ?? _configuration["JwtSettings:SecretKey"]
+            ?? throw new InvalidOperationException("JWT Secret Key not configured");
 
+        var issuer = _configuration["JwtSettings:Issuer"] ?? "RoboticControlAPI";
+        var audience = _configuration["JwtSettings:Audience"] ?? "RoboticControlClient";
+        var expirationHours = int.Parse(_configuration["JwtSettings:ExpirationHours"] ?? "8");
+
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var claims = new[]
@@ -86,10 +93,10 @@ public class AuthController : ControllerBase
         };
 
         var token = new JwtSecurityToken(
-            issuer: "RoboticControlAPI",
-            audience: "RoboticControlClient",
+            issuer: issuer,
+            audience: audience,
             claims: claims,
-            expires: DateTime.UtcNow.AddHours(8),
+            expires: DateTime.UtcNow.AddHours(expirationHours),
             signingCredentials: credentials
         );
 
