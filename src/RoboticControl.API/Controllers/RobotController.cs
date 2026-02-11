@@ -56,6 +56,7 @@ public class RobotController : ControllerBase
     /// <summary>
     /// Move robot to absolute position
     /// </summary>
+    [Authorize(Policy = "CanOperate")]
     [HttpPost("move")]
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
@@ -88,7 +89,7 @@ public class RobotController : ControllerBase
     /// <summary>
     /// Jog robot (relative movement)
     /// </summary>
-    [Authorize]
+    [Authorize(Policy = "CanOperate")]
     [HttpPost("jog")]
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
@@ -121,7 +122,7 @@ public class RobotController : ControllerBase
     /// <summary>
     /// Execute emergency stop
     /// </summary>
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     [HttpPost("emergency-stop")]
     [ProducesResponseType(200)]
     [ProducesResponseType(500)]
@@ -140,6 +141,7 @@ public class RobotController : ControllerBase
     /// <summary>
     /// Execute homing sequence
     /// </summary>
+    [Authorize(Policy = "CanOperate")]
     [HttpPost("home")]
     [ProducesResponseType(200)]
     [ProducesResponseType(500)]
@@ -166,7 +168,7 @@ public class RobotController : ControllerBase
     /// <summary>
     /// Reset error state
     /// </summary>
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     [HttpPost("reset-error")]
     [ProducesResponseType(200)]
     [ProducesResponseType(500)]

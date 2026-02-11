@@ -1,4 +1,5 @@
 using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using RoboticControl.Application.Mappings;
@@ -24,6 +25,11 @@ builder.Host.UseSerilog();
 
 // Add services to the container (scan all the assemblies looking for ControllerBase and subscribe/inject them in the DI container)
 builder.Services.AddControllers();
+
+// Configure FluentValidation to validate automatically before controller actions
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddFluentValidationClientsideAdapters();
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -70,7 +76,17 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-builder.Services.AddAuthorization();
+// Configure authorization policies
+builder.Services.AddAuthorization(options =>
+{
+    // Policy: Both Admin and Operator can operate the robot
+    options.AddPolicy("CanOperate", policy =>
+        policy.RequireRole("Admin", "Operator"));
+
+    // Policy: Only Admin for critical/dangerous operations
+    options.AddPolicy("AdminOnly", policy =>
+        policy.RequireRole("Admin"));
+});
 
 // Configure SignalR
 builder.Services.AddSignalR();
