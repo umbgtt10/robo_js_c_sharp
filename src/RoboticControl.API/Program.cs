@@ -1,4 +1,6 @@
 using FluentValidation;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using RoboticControl.Application.Mappings;
 using RoboticControl.Application.Services;
 using RoboticControl.Application.Validators;
@@ -6,6 +8,7 @@ using RoboticControl.Domain.Interfaces;
 using RoboticControl.Infrastructure.Configuration;
 using RoboticControl.Infrastructure.Hardware;
 using Serilog;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,6 +50,28 @@ builder.Services.AddCors(options =>
     });
 });
 
+// Configure JWT Authentication
+var secretKey = builder.Configuration["JwtSettings:SecretKey"]
+    ?? "YourSuperSecretKeyThatShouldBe32CharsOrMore!";
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = "RoboticControlAPI",
+            ValidAudience = "RoboticControlClient",
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
+            ClockSkew = TimeSpan.Zero
+        };
+    });
+
+builder.Services.AddAuthorization();
+
 // Configure SignalR
 builder.Services.AddSignalR();
 
@@ -85,7 +110,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseCors("AllowFrontend");
 
-// Not using authentication/authorization in this simple example, but if we were, we would add app.UseAuthentication() here before app.UseAuthorization()
+// Authentication and Authorization (order matters: Authentication before Authorization)
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

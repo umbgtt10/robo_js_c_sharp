@@ -1,8 +1,16 @@
+import { useNavigate } from 'react-router-dom';
 import { useRobot } from '../../contexts/RobotContext';
+import { apiClient } from '../../services/apiClient';
 import './Header.css';
 
 export function Header() {
   const { status, connectionStatus } = useRobot();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    apiClient.logout();
+    navigate('/login');
+  };
 
   const getConnectionBadgeClass = () => {
     switch (connectionStatus) {
@@ -19,6 +27,8 @@ export function Header() {
   const getStatusIndicator = () => {
     return status?.isConnected ? '●' : '○';
   };
+
+  const currentUser = apiClient.getCurrentUser();
 
   return (
     <header className="header">
@@ -37,6 +47,19 @@ export function Header() {
               <span className="status-value">{status.state}</span>
             </div>
           )}
+          {currentUser && (
+            <div className="status-info">
+              <span className="status-label">User:</span>
+              <span className="status-value">{currentUser.username} ({currentUser.role})</span>
+            </div>
+          )}
+          <button
+            onClick={handleLogout}
+            className="logout-button"
+            title="Logout"
+          >
+            Logout
+          </button>
         </div>
       </div>
     </header>

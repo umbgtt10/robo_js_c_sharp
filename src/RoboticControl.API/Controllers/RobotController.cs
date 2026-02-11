@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RoboticControl.Application.DTOs;
 using RoboticControl.Application.Services;
@@ -87,6 +88,7 @@ public class RobotController : ControllerBase
     /// <summary>
     /// Jog robot (relative movement)
     /// </summary>
+    [Authorize]
     [HttpPost("jog")]
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
@@ -119,6 +121,7 @@ public class RobotController : ControllerBase
     /// <summary>
     /// Execute emergency stop
     /// </summary>
+    [Authorize]
     [HttpPost("emergency-stop")]
     [ProducesResponseType(200)]
     [ProducesResponseType(500)]
@@ -163,6 +166,7 @@ public class RobotController : ControllerBase
     /// <summary>
     /// Reset error state
     /// </summary>
+    [Authorize]
     [HttpPost("reset-error")]
     [ProducesResponseType(200)]
     [ProducesResponseType(500)]

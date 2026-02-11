@@ -77,10 +77,10 @@ This is a three-tier web-based robotic control system built with React (frontend
 
 **React Core Hooks**
 
-useState: Used for managing component local state
-useEffect: Used to synchornize a compoenent with anexternal system (API calls, subscriptions, cleanup)
-useCallback: used for memorizing functions to prevent unnecessary re-renders
-useContext + createContext: used for global state management (avoiding prop drilling)
+useState: Used for managing components' local state
+useEffect: Used to synchronize a component with an external system (API calls, subscriptions, cleanup)
+useCallback: Used for memoizing functions to prevent unnecessary re-renders
+useContext + createContext: Used for global state management (avoiding prop drilling)
 
 ---
 

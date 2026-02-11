@@ -117,12 +117,24 @@ public class TcpRobotClient : IDisposable
     public async Task<RobotPosition> GetPositionAsync(CancellationToken cancellationToken = default)
     {
         var response = await SendCommandAsync("GET_POS", cancellationToken);
+
+        if (response.StartsWith("ERROR "))
+        {
+            throw new HardwareConnectionException($"Robot error: {response[6..]}");
+        }
+
         return ParsePositionResponse(response);
     }
 
     public async Task<RobotStatus> GetStatusAsync(CancellationToken cancellationToken = default)
     {
         var response = await SendCommandAsync("GET_STATUS", cancellationToken);
+
+        if (response.StartsWith("ERROR "))
+        {
+            throw new HardwareConnectionException($"Robot error: {response[6..]}");
+        }
+
         return ParseStatusResponse(response);
     }
 

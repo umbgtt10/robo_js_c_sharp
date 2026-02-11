@@ -71,6 +71,7 @@ public class RobotHardwareService : IRobotHardwareService, IDisposable
 
     public async Task<RobotPosition> GetCurrentPositionAsync(CancellationToken cancellationToken = default)
     {
+        await _commandLock.WaitAsync(cancellationToken);
         try
         {
             var position = await _client.GetPositionAsync(cancellationToken);
@@ -83,10 +84,15 @@ public class RobotHardwareService : IRobotHardwareService, IDisposable
             StartReconnectionIfNeeded();
             throw;
         }
+        finally
+        {
+            _commandLock.Release();
+        }
     }
 
     public async Task<RobotStatus> GetStatusAsync(CancellationToken cancellationToken = default)
     {
+        await _commandLock.WaitAsync(cancellationToken);
         try
         {
             var status = await _client.GetStatusAsync(cancellationToken);
@@ -98,6 +104,10 @@ public class RobotHardwareService : IRobotHardwareService, IDisposable
             _logger.LogWarning(ex, "Failed to get robot status");
             StartReconnectionIfNeeded();
             throw;
+        }
+        finally
+        {
+            _commandLock.Release();
         }
     }
 

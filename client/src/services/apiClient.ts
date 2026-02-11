@@ -1,6 +1,13 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
 import type { RobotPosition, RobotStatus, MoveCommand, JogCommand, WorkEnvelope, ApiResponse } from '../types';
 
+interface LoginResponse {
+  token: string;
+  username: string;
+  role: string;
+  expiresAt: string;
+}
+
 class ApiClient {
   private client: AxiosInstance;
 
@@ -13,14 +20,60 @@ class ApiClient {
       },
     });
 
-    // Response interceptor for error handling
+    // REQUEST INTERCEPTOR - Add token to every request
+    this.client.interceptors.request.use(
+      (config) => {
+        const token = localStorage.getItem('authToken');
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+      },
+      (error) => Promise.reject(error)
+    );
+
+    // RESPONSE INTERCEPTOR - Handle errors
     this.client.interceptors.response.use(
       (response) => response,
       (error: AxiosError) => {
+        // Token expired or invalid - redirect to login
+        if (error.response?.status === 401) {
+          localStorage.removeItem('authToken');
+          localStorage.removeItem('user');
+          window.location.href = '/login';
+        }
         console.error('API Error:', error.message);
         return Promise.reject(error);
       }
     );
+  }
+
+  // AUTH METHODS
+  async login(username: string, password: string): Promise<LoginResponse> {
+    const response = await this.client.post<LoginResponse>('/auth/login', { username, password });
+
+    // Store token and user info
+    localStorage.setItem('authToken', response.data.token);
+    localStorage.setItem('user', JSON.stringify({
+      username: response.data.username,
+      role: response.data.role
+    }));
+
+    return response.data;
+  }
+
+  logout(): void {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
+  }
+
+  isAuthenticated(): boolean {
+    return !!localStorage.getItem('authToken');
+  }
+
+  getCurrentUser(): { username: string; role: string } | null {
+    const userStr = localStorage.getItem('user');
+    return userStr ? JSON.parse(userStr) : null;
   }
 
   // Robot position operations
@@ -81,3 +134,4 @@ class ApiClient {
 
 export const apiClient = new ApiClient();
 export default apiClient;
+
