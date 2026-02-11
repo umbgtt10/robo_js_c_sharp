@@ -2,6 +2,7 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using RoboticControl.API.Middleware;
 using RoboticControl.Application.Mappings;
 using RoboticControl.Application.Services;
 using RoboticControl.Application.Validators;
@@ -114,9 +115,17 @@ builder.Services.AddScoped<RobotControlService>();
 builder.Services.AddHostedService<RoboticControl.API.BackgroundServices.HardwareConnectionService>();
 builder.Services.AddHostedService<RoboticControl.API.BackgroundServices.HardwareEventBroadcastService>();
 
+// Configure global exception handler for consistent error responses
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline
+
+// Exception handler must be first to catch all exceptions
+app.UseExceptionHandler();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

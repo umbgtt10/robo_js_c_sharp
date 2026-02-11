@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using RoboticControl.API.Models;
 using RoboticControl.Application.DTOs;
 using RoboticControl.Application.Services;
 using RoboticControl.Domain.Exceptions;
@@ -26,31 +27,23 @@ public class RobotController : ControllerBase
     /// Get current robot position
     /// </summary>
     [HttpGet("position")]
-    [ProducesResponseType(typeof(RobotPositionDto), 200)]
+    [ProducesResponseType(typeof(ApiResponse<RobotPositionDto>), 200)]
     [ProducesResponseType(500)]
-    public async Task<ActionResult<RobotPositionDto>> GetPosition(CancellationToken cancellationToken)
+    public async Task<ActionResult> GetPosition(CancellationToken cancellationToken)
     {
-        try
-        {
-            var position = await _robotService.GetCurrentPositionAsync(cancellationToken);
-            return Ok(position);
-        }
-        catch (HardwareConnectionException ex)
-        {
-            _logger.LogError(ex, "Hardware connection error");
-            return StatusCode(500, new { error = "Hardware connection error", message = ex.Message });
-        }
+        var position = await _robotService.GetCurrentPositionAsync(cancellationToken);
+        return Ok(ApiResponse<RobotPositionDto>.SuccessResponse(position, "Position retrieved successfully"));
     }
 
     /// <summary>
     /// Get current robot status
     /// </summary>
     [HttpGet("status")]
-    [ProducesResponseType(typeof(RobotStatusDto), 200)]
-    public async Task<ActionResult<RobotStatusDto>> GetStatus(CancellationToken cancellationToken)
+    [ProducesResponseType(typeof(ApiResponse<RobotStatusDto>), 200)]
+    public async Task<ActionResult> GetStatus(CancellationToken cancellationToken)
     {
         var status = await _robotService.GetSystemStatusAsync(cancellationToken);
-        return Ok(status);
+        return Ok(ApiResponse<RobotStatusDto>.SuccessResponse(status, "Status retrieved successfully"));
     }
 
     /// <summary>
@@ -58,32 +51,19 @@ public class RobotController : ControllerBase
     /// </summary>
     [Authorize(Policy = "CanOperate")]
     [HttpPost("move")]
-    [ProducesResponseType(200)]
+    [ProducesResponseType(typeof(ApiResponse), 200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(500)]
     public async Task<ActionResult> Move([FromBody] MoveCommandDto command, CancellationToken cancellationToken)
     {
-        try
-        {
-            var success = await _robotService.MoveToPositionAsync(command, cancellationToken);
+        var success = await _robotService.MoveToPositionAsync(command, cancellationToken);
 
-            if (success)
-            {
-                return Ok(new { message = "Move command executed successfully" });
-            }
+        if (success)
+        {
+            return Ok(ApiResponse.SuccessResponse("Move command executed successfully"));
+        }
 
-            return StatusCode(500, new { error = "Move command failed" });
-        }
-        catch (CommandValidationException ex)
-        {
-            _logger.LogWarning(ex, "Move command validation failed");
-            return BadRequest(new { error = "Validation error", message = ex.Message });
-        }
-        catch (HardwareConnectionException ex)
-        {
-            _logger.LogError(ex, "Hardware connection error during move");
-            return StatusCode(500, new { error = "Hardware connection error", message = ex.Message });
-        }
+        return StatusCode(500, ApiResponse.ErrorResponse("Move command failed"));
     }
 
     /// <summary>
@@ -91,32 +71,19 @@ public class RobotController : ControllerBase
     /// </summary>
     [Authorize(Policy = "CanOperate")]
     [HttpPost("jog")]
-    [ProducesResponseType(200)]
+    [ProducesResponseType(typeof(ApiResponse), 200)]
     [ProducesResponseType(400)]
     [ProducesResponseType(500)]
     public async Task<ActionResult> Jog([FromBody] JogCommandDto command, CancellationToken cancellationToken)
     {
-        try
-        {
-            var success = await _robotService.JogAsync(command, cancellationToken);
+        var success = await _robotService.JogAsync(command, cancellationToken);
 
-            if (success)
-            {
-                return Ok(new { message = "Jog command executed successfully" });
-            }
+        if (success)
+        {
+            return Ok(ApiResponse.SuccessResponse("Jog command executed successfully"));
+        }
 
-            return StatusCode(500, new { error = "Jog command failed" });
-        }
-        catch (CommandValidationException ex)
-        {
-            _logger.LogWarning(ex, "Jog command validation failed");
-            return BadRequest(new { error = "Validation error", message = ex.Message });
-        }
-        catch (HardwareConnectionException ex)
-        {
-            _logger.LogError(ex, "Hardware connection error during jog");
-            return StatusCode(500, new { error = "Hardware connection error", message = ex.Message });
-        }
+        return StatusCode(500, ApiResponse.ErrorResponse("Jog command failed"));
     }
 
     /// <summary>
@@ -124,7 +91,7 @@ public class RobotController : ControllerBase
     /// </summary>
     [Authorize(Policy = "AdminOnly")]
     [HttpPost("emergency-stop")]
-    [ProducesResponseType(200)]
+    [ProducesResponseType(typeof(ApiResponse), 200)]
     [ProducesResponseType(500)]
     public async Task<ActionResult> EmergencyStop()
     {
@@ -132,10 +99,10 @@ public class RobotController : ControllerBase
 
         if (success)
         {
-            return Ok(new { message = "Emergency stop executed" });
+            return Ok(ApiResponse.SuccessResponse("Emergency stop executed"));
         }
 
-        return StatusCode(500, new { error = "Emergency stop failed" });
+        return StatusCode(500, ApiResponse.ErrorResponse("Emergency stop failed"));
     }
 
     /// <summary>
@@ -143,26 +110,18 @@ public class RobotController : ControllerBase
     /// </summary>
     [Authorize(Policy = "CanOperate")]
     [HttpPost("home")]
-    [ProducesResponseType(200)]
+    [ProducesResponseType(typeof(ApiResponse), 200)]
     [ProducesResponseType(500)]
     public async Task<ActionResult> Home(CancellationToken cancellationToken)
     {
-        try
-        {
-            var success = await _robotService.HomeAsync(cancellationToken);
+        var success = await _robotService.HomeAsync(cancellationToken);
 
-            if (success)
-            {
-                return Ok(new { message = "Homing sequence completed" });
-            }
-
-            return StatusCode(500, new { error = "Homing sequence failed" });
-        }
-        catch (HardwareConnectionException ex)
+        if (success)
         {
-            _logger.LogError(ex, "Hardware connection error during homing");
-            return StatusCode(500, new { error = "Hardware connection error", message = ex.Message });
+            return Ok(ApiResponse.SuccessResponse("Homing sequence completed"));
         }
+
+        return StatusCode(500, ApiResponse.ErrorResponse("Homing sequence failed"));
     }
 
     /// <summary>
@@ -170,7 +129,7 @@ public class RobotController : ControllerBase
     /// </summary>
     [Authorize(Policy = "AdminOnly")]
     [HttpPost("reset-error")]
-    [ProducesResponseType(200)]
+    [ProducesResponseType(typeof(ApiResponse), 200)]
     [ProducesResponseType(500)]
     public async Task<ActionResult> ResetError()
     {
@@ -178,9 +137,9 @@ public class RobotController : ControllerBase
 
         if (success)
         {
-            return Ok(new { message = "Error state reset" });
+            return Ok(ApiResponse.SuccessResponse("Error state reset"));
         }
 
-        return StatusCode(500, new { error = "Failed to reset error" });
+        return StatusCode(500, ApiResponse.ErrorResponse("Failed to reset error"));
     }
 }
