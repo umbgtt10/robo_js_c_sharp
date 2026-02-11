@@ -25,10 +25,8 @@ class SignalRService {
     }
 
     this.connectingPromise = (async () => {
-      // Use absolute URL to backend, Vite proxy doesn't work reliably for WebSockets
-      const hubUrl = import.meta.env.DEV
-        ? 'https://localhost:5001/hubs/robot'
-        : '/hubs/robot';
+      // Default to Vite proxy in dev; allow override via VITE_HUB_URL when needed
+      const hubUrl = import.meta.env.VITE_HUB_URL ?? '/hubs/robot';
 
       this.connection = new signalR.HubConnectionBuilder()
         .withUrl(hubUrl, {
