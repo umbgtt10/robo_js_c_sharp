@@ -25,6 +25,7 @@ export function RobotProvider({ children }: { children: ReactNode }) {
   const refreshPosition = useCallback(async () => {
     try {
       const pos = await apiClient.getPosition();
+      console.log('Position received:', pos);
       setPosition(pos);
       setError(null);
     } catch (err) {
@@ -36,6 +37,7 @@ export function RobotProvider({ children }: { children: ReactNode }) {
   const refreshStatus = useCallback(async () => {
     try {
       const stat = await apiClient.getStatus();
+      console.log('Status received:', stat);
       setStatus(stat);
       setError(null);
     } catch (err) {

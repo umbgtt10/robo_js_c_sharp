@@ -78,14 +78,14 @@ class ApiClient {
 
   // Robot position operations
   async getPosition(): Promise<RobotPosition> {
-    const response = await this.client.get<RobotPosition>('/robot/position');
-    return response.data;
+    const response = await this.client.get<{ data: RobotPosition }>('/robot/position');
+    return response.data.data;
   }
 
   // Robot status operations
   async getStatus(): Promise<RobotStatus> {
-    const response = await this.client.get<RobotStatus>('/robot/status');
-    return response.data;
+    const response = await this.client.get<{ data: RobotStatus }>('/robot/status');
+    return response.data.data;
   }
 
   // Movement commands
@@ -116,8 +116,8 @@ class ApiClient {
 
   // Configuration
   async getWorkEnvelope(): Promise<WorkEnvelope> {
-    const response = await this.client.get<WorkEnvelope>('/configuration/work-envelope');
-    return response.data;
+    const response = await this.client.get<{ data: WorkEnvelope }>('/configuration/work-envelope');
+    return response.data.data;
   }
 
   async getConnectionSettings(): Promise<unknown> {

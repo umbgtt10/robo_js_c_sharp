@@ -13,8 +13,15 @@ class SignalRService {
       return true;
     }
 
+    // Use absolute URL to backend, Vite proxy doesn't work reliably for WebSockets
+    const hubUrl = import.meta.env.DEV
+      ? 'https://localhost:5001/hubs/robot'
+      : '/hubs/robot';
+
     this.connection = new signalR.HubConnectionBuilder()
-      .withUrl('/hubs/robot')
+      .withUrl(hubUrl, {
+        skipNegotiation: false,
+      })
       .withAutomaticReconnect({
         nextRetryDelayInMilliseconds: (retryContext) => {
           const delay = Math.min(
