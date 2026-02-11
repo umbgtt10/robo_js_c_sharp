@@ -7,46 +7,65 @@ class SignalRService {
   private maxReconnectAttempts = 10;
   private reconnectDelay = 1000;
   private maxReconnectDelay = 16000;
+  private positionHandlers = new Set<(position: RobotPosition) => void>();
+  private statusHandlers = new Set<(status: RobotStatus) => void>();
+  private connectingPromise: Promise<boolean> | null = null;
 
   async connect(): Promise<boolean> {
     if (this.connection?.state === signalR.HubConnectionState.Connected) {
       return true;
     }
 
-    // Use absolute URL to backend, Vite proxy doesn't work reliably for WebSockets
-    const hubUrl = import.meta.env.DEV
-      ? 'https://localhost:5001/hubs/robot'
-      : '/hubs/robot';
-
-    this.connection = new signalR.HubConnectionBuilder()
-      .withUrl(hubUrl, {
-        skipNegotiation: false,
-      })
-      .withAutomaticReconnect({
-        nextRetryDelayInMilliseconds: (retryContext) => {
-          const delay = Math.min(
-            this.reconnectDelay * Math.pow(2, retryContext.previousRetryCount),
-            this.maxReconnectDelay
-          );
-          console.log(`SignalR reconnecting in ${delay}ms (attempt ${retryContext.previousRetryCount + 1})`);
-          return delay;
-        },
-      })
-      .configureLogging(signalR.LogLevel.Information)
-      .build();
-
-    this.setupEventHandlers();
-
-    try {
-      await this.connection.start();
-      console.log('SignalR connected');
-      this.reconnectAttempts = 0;
-      return true;
-    } catch (error) {
-      console.error('SignalR connection error:', error);
-      this.scheduleReconnect();
-      return false;
+    if (this.connection?.state === signalR.HubConnectionState.Connecting && this.connectingPromise) {
+      return this.connectingPromise;
     }
+
+    if (this.connectingPromise) {
+      return this.connectingPromise;
+    }
+
+    this.connectingPromise = (async () => {
+      // Use absolute URL to backend, Vite proxy doesn't work reliably for WebSockets
+      const hubUrl = import.meta.env.DEV
+        ? 'https://localhost:5001/hubs/robot'
+        : '/hubs/robot';
+
+      this.connection = new signalR.HubConnectionBuilder()
+        .withUrl(hubUrl, {
+          skipNegotiation: false,
+        })
+        .withAutomaticReconnect({
+          nextRetryDelayInMilliseconds: (retryContext) => {
+            const delay = Math.min(
+              this.reconnectDelay * Math.pow(2, retryContext.previousRetryCount),
+              this.maxReconnectDelay
+            );
+            console.log(`SignalR reconnecting in ${delay}ms (attempt ${retryContext.previousRetryCount + 1})`);
+            return delay;
+          },
+        })
+        .configureLogging(signalR.LogLevel.Information)
+        .build();
+
+      this.attachUpdateHandlers();
+
+      this.setupEventHandlers();
+
+      try {
+        await this.connection.start();
+        console.log('SignalR connected');
+        this.reconnectAttempts = 0;
+        return true;
+      } catch (error) {
+        console.error('SignalR connection error:', error);
+        this.scheduleReconnect();
+        return false;
+      } finally {
+        this.connectingPromise = null;
+      }
+    })();
+
+    return this.connectingPromise;
   }
 
   private setupEventHandlers(): void {
@@ -64,6 +83,18 @@ class SignalRService {
     this.connection.onreconnected((connectionId) => {
       console.log('SignalR reconnected', connectionId);
       this.reconnectAttempts = 0;
+    });
+  }
+
+  private attachUpdateHandlers(): void {
+    if (!this.connection) return;
+
+    this.positionHandlers.forEach((handler) => {
+      this.connection?.on('PositionUpdate', handler);
+    });
+
+    this.statusHandlers.forEach((handler) => {
+      this.connection?.on('StatusUpdate', handler);
     });
   }
 
@@ -95,18 +126,22 @@ class SignalRService {
   }
 
   onPositionUpdate(callback: (position: RobotPosition) => void): void {
+    this.positionHandlers.add(callback);
     this.connection?.on('PositionUpdate', callback);
   }
 
   onStatusUpdate(callback: (status: RobotStatus) => void): void {
+    this.statusHandlers.add(callback);
     this.connection?.on('StatusUpdate', callback);
   }
 
   offPositionUpdate(callback: (position: RobotPosition) => void): void {
+    this.positionHandlers.delete(callback);
     this.connection?.off('PositionUpdate', callback);
   }
 
   offStatusUpdate(callback: (status: RobotStatus) => void): void {
+    this.statusHandlers.delete(callback);
     this.connection?.off('StatusUpdate', callback);
   }
 

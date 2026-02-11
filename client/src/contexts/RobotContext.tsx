@@ -55,11 +55,7 @@ export function RobotProvider({ children }: { children: ReactNode }) {
         // Get initial data
         await Promise.all([refreshPosition(), refreshStatus()]);
 
-        // Connect to SignalR
-        const connected = await signalRService.connect();
-        setConnectionStatus(connected ? 'Connected' : 'Failed');
-
-        // Set up SignalR event listeners
+        // Set up SignalR event listeners BEFORE connecting
         signalRService.onPositionUpdate((pos) => {
           setPosition(pos);
         });
@@ -67,6 +63,10 @@ export function RobotProvider({ children }: { children: ReactNode }) {
         signalRService.onStatusUpdate((stat) => {
           setStatus(stat);
         });
+
+        // Connect to SignalR
+        const connected = await signalRService.connect();
+        setConnectionStatus(connected ? 'Connected' : 'Failed');
       } catch (err) {
         console.error('Initialization error:', err);
         setConnectionStatus('Failed');
