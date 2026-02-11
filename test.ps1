@@ -76,7 +76,7 @@ if ($Backend -or $runAll) {
     # Unit Tests
     if (Test-Path "$rootDir\tests\RoboticControl.UnitTests") {
         Write-Host "  -> Unit Tests" -ForegroundColor Gray
-        dotnet test "$rootDir\tests\RoboticControl.UnitTests\RoboticControl.UnitTests.csproj" --nologo --verbosity quiet
+        dotnet test "$rootDir\tests\RoboticControl.UnitTests\RoboticControl.UnitTests.csproj" --nologo --logger "console;verbosity=normal"
 
         if ($LASTEXITCODE -ne 0) {
             Write-Host "Backend: Unit tests FAILED!" -ForegroundColor Red
@@ -87,7 +87,7 @@ if ($Backend -or $runAll) {
     # Integration Tests
     if (Test-Path "$rootDir\tests\RoboticControl.IntegrationTests") {
         Write-Host "  -> Integration Tests" -ForegroundColor Gray
-        dotnet test "$rootDir\tests\RoboticControl.IntegrationTests\RoboticControl.IntegrationTests.csproj" --nologo --verbosity quiet
+        dotnet test "$rootDir\tests\RoboticControl.IntegrationTests\RoboticControl.IntegrationTests.csproj" --nologo --logger "console;verbosity=normal"
 
         if ($LASTEXITCODE -ne 0) {
             Write-Host "Backend: Integration tests FAILED!" -ForegroundColor Red
