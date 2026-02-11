@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using RoboticControl.API.Models;
 using RoboticControl.Application.DTOs;
 using RoboticControl.Application.Services;
@@ -27,6 +28,7 @@ public class RobotController : ControllerBase
     /// Get current robot position
     /// </summary>
     [HttpGet("position")]
+    [EnableRateLimiting("queries")]
     [ProducesResponseType(typeof(ApiResponse<RobotPositionDto>), 200)]
     [ProducesResponseType(500)]
     public async Task<ActionResult> GetPosition(CancellationToken cancellationToken)
@@ -39,6 +41,7 @@ public class RobotController : ControllerBase
     /// Get current robot status
     /// </summary>
     [HttpGet("status")]
+    [EnableRateLimiting("queries")]
     [ProducesResponseType(typeof(ApiResponse<RobotStatusDto>), 200)]
     public async Task<ActionResult> GetStatus(CancellationToken cancellationToken)
     {
@@ -50,6 +53,7 @@ public class RobotController : ControllerBase
     /// Move robot to absolute position
     /// </summary>
     [Authorize(Policy = "CanOperate")]
+    [EnableRateLimiting("commands")]
     [HttpPost("move")]
     [ProducesResponseType(typeof(ApiResponse), 200)]
     [ProducesResponseType(400)]
@@ -70,6 +74,7 @@ public class RobotController : ControllerBase
     /// Jog robot (relative movement)
     /// </summary>
     [Authorize(Policy = "CanOperate")]
+    [EnableRateLimiting("commands")]
     [HttpPost("jog")]
     [ProducesResponseType(typeof(ApiResponse), 200)]
     [ProducesResponseType(400)]
@@ -90,6 +95,7 @@ public class RobotController : ControllerBase
     /// Execute emergency stop
     /// </summary>
     [Authorize(Policy = "AdminOnly")]
+    [EnableRateLimiting("commands")]
     [HttpPost("emergency-stop")]
     [ProducesResponseType(typeof(ApiResponse), 200)]
     [ProducesResponseType(500)]
@@ -109,6 +115,7 @@ public class RobotController : ControllerBase
     /// Execute homing sequence
     /// </summary>
     [Authorize(Policy = "CanOperate")]
+    [EnableRateLimiting("commands")]
     [HttpPost("home")]
     [ProducesResponseType(typeof(ApiResponse), 200)]
     [ProducesResponseType(500)]
@@ -128,6 +135,7 @@ public class RobotController : ControllerBase
     /// Reset error state
     /// </summary>
     [Authorize(Policy = "AdminOnly")]
+    [EnableRateLimiting("commands")]
     [HttpPost("reset-error")]
     [ProducesResponseType(typeof(ApiResponse), 200)]
     [ProducesResponseType(500)]

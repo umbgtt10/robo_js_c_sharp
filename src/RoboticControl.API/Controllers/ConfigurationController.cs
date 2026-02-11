@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using RoboticControl.Application.DTOs;
 using RoboticControl.Application.Services;
 
@@ -24,6 +25,7 @@ public class ConfigurationController : ControllerBase
     /// Get work envelope configuration
     /// </summary>
     [HttpGet("work-envelope")]
+    [EnableRateLimiting("config")]
     [ProducesResponseType(typeof(WorkEnvelopeDto), 200)]
     public ActionResult<WorkEnvelopeDto> GetWorkEnvelope()
     {
@@ -35,6 +37,7 @@ public class ConfigurationController : ControllerBase
     /// Get connection settings (placeholder)
     /// </summary>
     [HttpGet("connection")]
+    [EnableRateLimiting("config")]
     [ProducesResponseType(200)]
     public ActionResult GetConnectionSettings()
     {
