@@ -2,38 +2,312 @@
 
 A production-grade full-stack web application for monitoring and controlling industrial robotic systems. Built with React SPA frontend, .NET 9 Web API backend, and TCP/IP hardware communication.
 
-## 🏗️ Architecture
+## 📋 Quick Links
 
-### Technology Stack
+- **[ARCHITECTURE.md](ARCHITECTURE.md)** - System architecture, design patterns, and technical decisions
+- **[ROADMAP.md](ROADMAP.md)** - Feature roadmap, future enhancements, and priorities
+- **[tools/RobotSimulator/PROTOCOL.md](tools/RobotSimulator/PROTOCOL.md)** - Hardware communication protocol
 
-#### Frontend
+## 🏗️ Technology Stack
+
+### Frontend
 - **React 18** with TypeScript
-- **Vite** for build tooling and development
+- **Vite** for build tooling
 - **SignalR** for real-time bidirectional communication
 - **Axios** for REST API calls
-- **React Router** for navigation
+- **TailwindCSS** for styling
 
-#### Backend
-- **.NET 9** Web API with minimal APIs
+### Backend
+- **.NET 9** Web API with Clean Architecture
 - **SignalR** for WebSocket communication
 - **Serilog** for structured logging
 - **AutoMapper** for object mapping
 - **FluentValidation** for input validation
+- **JWT Bearer** authentication
+- **Rate Limiting** for API protection
 
-#### Communication
+### Communication
 - **REST API** for command and control
-- **SignalR WebSockets** for real-time position/status updates
-- **TCP/IP** for hardware communication (custom text protocol)
+- **SignalR WebSockets** for real-time updates
+- **TCP/IP** for hardware communication
 
-### Project Structure
+## 🚀 Getting Started
+
+### Prerequisites
+
+- **.NET 9 SDK** - [Download](https://dotnet.microsoft.com/download)
+- **Node.js 18+** and **npm** - [Download](https://nodejs.org/)
+- Code editor (VS Code, Visual Studio, Rider)
+
+### Quick Start
+
+Use the launcher script to start all components:
+
+**PowerShell:**
+```powershell
+.\start.ps1
+```
+
+**Command Prompt:**
+```cmd
+start.bat
+```
+
+**Options:**
+```powershell
+.\start.ps1 -Clean        # Clean build artifacts before starting
+.\start.ps1 -SkipInstall  # Skip npm install
+```
+
+Once all services are running, open: **http://localhost:5173**
+
+The script automatically starts:
+1. Robot Simulator (port 5000)
+2. Backend API (port 5001)
+3. Frontend dev server (port 5173)
+
+### Manual Start
+
+#### 1. Start Robot Simulator
+```bash
+dotnet run --project tools/RobotSimulator
+```
+
+#### 2. Start Backend API
+```bash
+dotnet run --project src/RoboticControl.API
+```
+
+API runs on: `https://localhost:5001`
+
+#### 3. Start Frontend
+```bash
+cd client
+npm install  # First time only
+npm run dev
+```
+
+Frontend runs on: `http://localhost:5173`
+
+## 🧹 Cleanup
+
+Remove all build artifacts and processes:
+
+```powershell
+.\clean.ps1
+```
+
+This removes:
+- Running processes on ports 5000, 5001, 5173
+- All `bin` and `obj` folders
+- `node_modules` and `dist` folders
+- `logs` folder
+
+## 🎮 Using the Application
+
+### Dashboard Features
+
+**Position Display**
+- Real-time X, Y, Z coordinates (mm)
+- Rotation angles (degrees)
+- Last update timestamp
+
+**Jog Controls**
+- Manual movement: ±X, ±Y, ±Z
+- Step sizes: 1mm, 10mm, 100mm
+- Validated against work envelope
+
+**System Status**
+- Robot state (Idle, Moving, EmergencyStopped)
+- Temperature (°C) and load percentage
+- Connection status
+- Error codes and messages
+
+**Emergency Stop**
+- Large red circular button
+- Immediately halts all operations
+- Requires error reset to resume
+
+### Testing the System
+
+1. **Position Updates**: Watch real-time position changes
+2. **Movement**: Click jog controls (+X, -X, +Y, -Y, +Z, -Z)
+3. **Emergency Stop**: Click red button, then reset error
+4. **Homing**: Click "🏠 Home Robot" button
+
+## 📡 API Endpoints
+
+Base URL: `https://localhost:5001/api`
+
+### Robot Control
+- `GET /robot/position` - Get current position
+- `GET /robot/status` - Get system status
+- `POST /robot/move` - Move to absolute position
+- `POST /robot/jog` - Move relative (jog)
+- `POST /robot/emergency-stop` - Emergency stop
+- `POST /robot/home` - Execute homing
+- `POST /robot/reset-error` - Reset error state
+
+### Authentication
+- `POST /auth/login` - User login (JWT)
+
+### Configuration
+- `GET /configuration/work-envelope` - Work envelope boundaries
+- `GET /configuration/connection` - Connection settings
+
+### Health
+- `GET /health` - API health check
+
+### Swagger Documentation
+
+Interactive API docs: **https://localhost:5001/swagger** (Development only)
+
+## ⚙️ Configuration
+
+### Environment Variables
+
+**JWT Secret (Production - REQUIRED):**
+```bash
+export JWT_SECRET_KEY="your-super-secret-production-key-min-32-chars"
+```
+
+**Hardware Connection (Optional):**
+```bash
+export HARDWARE__HOST="192.168.1.100"
+export HARDWARE__PORT="502"
+```
+
+**CORS Origins (Optional):**
+```bash
+export CORS__ALLOWEDORIGINS__0="https://robotcontrol.example.com"
+```
+
+### Configuration Files
+
+- `appsettings.json` - Base configuration
+- `appsettings.Development.json` - Development overrides
+- `appsettings.Production.json` - Production settings
+
+Configuration priority (lowest to highest):
+1. `appsettings.json`
+2. `appsettings.{Environment}.json`
+3. Environment variables
+4. Command-line arguments
+
+### Development Credentials
+
+- **Admin**: `admin` / `admin123`
+- **Operator**: `operator` / `operator123`
+
+## 🧪 Testing
+
+```bash
+# Run all tests
+dotnet test
+
+# Run unit tests
+dotnet test tests/RoboticControl.UnitTests
+
+# Run integration tests
+dotnet test tests/RoboticControl.IntegrationTests
+
+# Frontend tests
+cd client
+npm test
+```
+
+## 🔨 Building for Production
+
+### Backend
+```bash
+dotnet publish src/RoboticControl.API -c Release -o ./publish
+```
+
+### Frontend
+```bash
+cd client
+npm run build
+```
+
+Build output: `client/dist/`
+
+## 🐛 Troubleshooting
+
+### Launcher Script Issues
+
+**Stopping services:**
+- Press **Ctrl+C** in the terminal running `start.ps1`
+
+**Execution policy error:**
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+Or use `start.bat` instead
+
+**Port already in use:**
+```powershell
+.\clean.ps1
+```
+
+### Backend Issues
+
+**.NET SDK not found:**
+- Install .NET 9 SDK
+
+**Port 5001 already in use:**
+- Change port in `Properties/launchSettings.json` or stop other services
+
+### Frontend Issues
+
+**Cannot find module:**
+```bash
+cd client
+npm install
+```
+
+**Port 5173 already in use:**
+- Change port in `vite.config.ts`
+
+### Connection Issues
+
+**Simulator connection fails:**
+- Ensure simulator is running on port 5000
+- Check firewall settings
+
+**SignalR not connecting:**
+- Ensure backend API is running
+- Check CORS settings in `appsettings.json`
+- Verify proxy configuration in `vite.config.ts`
+
+**Position not updating:**
+- Check browser console for errors
+- Check backend logs for hardware connection status
+- Verify SignalR connection in Network tab
+
+## 📂 Project Structure
 
 ```
 web_js_c_sharp/
 ├── src/
 │   ├── RoboticControl.API/          # Web API entry point
-│   ├── RoboticControl.Application/  # Business logic layer
-│   ├── RoboticControl.Domain/       # Core domain models
-│   └── RoboticControl.Infrastructure/ # Hardware communication
+│   │   ├── Controllers/             # REST endpoints
+│   │   ├── Extensions/              # Service configuration
+│   │   ├── Hubs/                    # SignalR hubs
+│   │   ├── BackgroundServices/      # Long-running services
+│   │   └── Middleware/              # Custom middleware
+│   ├── RoboticControl.Application/  # Business logic
+│   │   ├── Services/                # Business services
+│   │   ├── DTOs/                    # Data transfer objects
+│   │   ├── Validators/              # FluentValidation rules
+│   │   └── Mappings/                # AutoMapper profiles
+│   ├── RoboticControl.Domain/       # Core domain
+│   │   ├── Entities/                # Domain models
+│   │   ├── Interfaces/              # Abstractions
+│   │   ├── Enums/                   # Enumerations
+│   │   └── Exceptions/              # Custom exceptions
+│   └── RoboticControl.Infrastructure/ # External systems
+│       ├── Hardware/                # TCP/IP communication
+│       └── Configuration/           # Settings management
 ├── tests/
 │   ├── RoboticControl.UnitTests/
 │   └── RoboticControl.IntegrationTests/
@@ -46,58 +320,48 @@ web_js_c_sharp/
 │       ├── services/                # API & SignalR clients
 │       ├── hooks/                   # Custom React hooks
 │       └── contexts/                # React Context providers
-└── docs/                            # Documentation
+├── start.ps1                        # Unified launcher
+├── start.bat                        # Windows batch wrapper
+├── clean.ps1                        # Cleanup script
+├── README.md                        # This file
+├── ARCHITECTURE.md                  # Architecture documentation
+└── ROADMAP.md                       # Feature roadmap
 ```
 
-## 🚀 Getting Started
+## 🔒 Security Features
 
-### Prerequisites
+- **JWT Authentication** with BCrypt password hashing
+- **Role-based Authorization** (Admin, Operator)
+- **Rate Limiting** to prevent abuse
+- **CORS** protection
+- **Input Validation** with FluentValidation
+- **Global Exception Handling**
+- **Environment-specific Configuration** with secure secrets
 
-- **.NET 9 SDK** (or .NET 8/6) - [Download](https://dotnet.microsoft.com/download)
-- **Node.js 18+** and **npm** - [Download](https://nodejs.org/)
-- A code editor (VS Code, Visual Studio, Rider, etc.)
+## 📚 Learning Resources
 
-### Installation & Setup
+This project demonstrates:
+- Clean Architecture / Onion Architecture
+- Dependency Injection
+- Repository Pattern
+- CQRS-like separation
+- Event-driven communication
+- Background services
+- Real-time WebSocket communication
+- React hooks and context
+- TypeScript type safety
 
-#### 1️⃣ Clone or navigate to the repository
+## 📝 License
 
-```bash
-cd c:\Projects\web_js_c_sharp
-```
+This is a demonstration/educational application for showcasing full-stack web development with hardware integration.
 
-#### 2️⃣ Install Frontend Dependencies
+## 🎯 Next Steps
 
-```bash
-cd client
-npm install
-cd ..
-```
+See [ROADMAP.md](ROADMAP.md) for planned features and enhancements.
 
-#### 3️⃣ Restore Backend Dependencies
+---
 
-```bash
-dotnet restore
-```
-
-### 🧹 Cleanup
-
-To remove all build artifacts and dependencies:
-
-**PowerShell:**
-```powershell
-.\clean.ps1
-```
-
-This will remove:
-- All running processes on ports 5000, 5001, 5173
-- All `bin` and `obj` folders (.NET build artifacts)
-- `node_modules` folder (frontend dependencies)
-- `dist` folder (frontend build output)
-- `logs` folder (application logs)
-
-**Note:** After cleanup, you'll need to run `npm install` again before starting the frontend.
-
-### Running the Application
+**Built with ❤️ for hightech manufacturing environments**
 
 The application consists of three components: Robot Simulator, Backend API, and Frontend.
 

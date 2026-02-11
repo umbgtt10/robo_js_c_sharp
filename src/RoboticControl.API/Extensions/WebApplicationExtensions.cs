@@ -31,7 +31,7 @@ public static class WebApplicationExtensions
         app.MapControllers();
 
         // Create SignalR hub endpoint for real-time updates to the frontend (e.g. position and status updates) - this is where the frontend will connect to receive real-time notifications from the server about hardware events. The HardwareEventBroadcastService will push updates to this hub whenever the robot's position or status changes.
-        app.MapHub<RoboticControl.API.Hubs.RobotHub>("/hubs/robot");
+        app.MapHub<Hubs.RobotHub>("/hubs/robot");
 
         // Minimal health check endpoint
         app.MapGet("/health", () => new

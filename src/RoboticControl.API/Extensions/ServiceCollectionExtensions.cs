@@ -39,7 +39,7 @@ public static class ServiceCollectionExtensions
 
         // Configure CORS (Cross-Origin Resource Sharing) => Accept request from frontend (e.g. http://localhost:5173)
         var corsOrigins = configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
-            ?? new[] { "http://localhost:5173" };
+            ?? ["http://localhost:5173"];
 
         services.AddCors(options =>
         {
@@ -75,8 +75,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<RobotControlService>();
 
         // Add background services (order matters: connection first, then event broadcast): This run all the time and independently of the API controllers - it will try to connect to the hardware on startup and then subscribe to events and broadcast them via SignalR
-        services.AddHostedService<RoboticControl.API.BackgroundServices.HardwareConnectionService>();
-        services.AddHostedService<RoboticControl.API.BackgroundServices.HardwareEventBroadcastService>();
+        services.AddHostedService<BackgroundServices.HardwareConnectionService>();
+        services.AddHostedService<BackgroundServices.HardwareEventBroadcastService>();
 
         // Configure global exception handler for consistent error responses
         services.AddExceptionHandler<GlobalExceptionHandler>();
